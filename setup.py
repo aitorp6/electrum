@@ -36,42 +36,42 @@ if platform.system() in ['Linux', 'FreeBSD', 'DragonFly']:
         else:
             usr_share = os.path.expanduser('~/.local/share')
     data_files += [
-        (os.path.join(usr_share, 'applications/'), ['electrum.desktop']),
-        (os.path.join(usr_share, icons_dirname), ['icons/electrum.png'])
+        (os.path.join(usr_share, 'applications/'), ['electrum-deeponion.desktop']),
+        (os.path.join(usr_share, icons_dirname), ['icons/electrum-deeponion.png'])
     ]
 
 setup(
-    name="Electrum",
+    name="Electrum-DeepOnion",
     version=version.ELECTRUM_VERSION,
     install_requires=requirements,
     extras_require={
         'full': requirements_hw + ['pycryptodomex'],
     },
     packages=[
-        'electrum',
-        'electrum_gui',
-        'electrum_gui.qt',
-        'electrum_plugins',
-        'electrum_plugins.audio_modem',
-        'electrum_plugins.cosigner_pool',
-        'electrum_plugins.email_requests',
-        'electrum_plugins.greenaddress_instant',
-        'electrum_plugins.hw_wallet',
-        'electrum_plugins.keepkey',
-        'electrum_plugins.labels',
-        'electrum_plugins.ledger',
-        'electrum_plugins.trezor',
-        'electrum_plugins.digitalbitbox',
-        'electrum_plugins.trustedcoin',
-        'electrum_plugins.virtualkeyboard',
+        'electrum_deeponion',
+        'electrum_deeponion_gui',
+        'electrum_deeponion_gui.qt',
+        'electrum_deeponion_plugins',
+        'electrum_deeponion_plugins.audio_modem',
+        'electrum_deeponion_plugins.cosigner_pool',
+        'electrum_deeponion_plugins.email_requests',
+        'electrum_deeponion_plugins.greenaddress_instant',
+        'electrum_deeponion_plugins.hw_wallet',
+        'electrum_deeponion_plugins.keepkey',
+        'electrum_deeponion_plugins.labels',
+        'electrum_deeponion_plugins.ledger',
+        'electrum_deeponion_plugins.trezor',
+        'electrum_deeponion_plugins.digitalbitbox',
+        'electrum_deeponion_plugins.trustedcoin',
+        'electrum_deeponion_plugins.virtualkeyboard',
     ],
     package_dir={
-        'electrum': 'lib',
-        'electrum_gui': 'gui',
-        'electrum_plugins': 'plugins',
+        'electrum_deeponion': 'lib',
+        'electrum_deeponion_gui': 'gui',
+        'electrum_deeponion_plugins': 'plugins',
     },
     package_data={
-        'electrum': [
+        'electrum_deeponion': [
             'servers.json',
             'servers_testnet.json',
             'servers_regtest.json',
@@ -83,12 +83,12 @@ setup(
             'locale/*/LC_MESSAGES/electrum.mo',
         ]
     },
-    scripts=['electrum'],
+    scripts=['electrum-deeponion'],
     data_files=data_files,
-    description="Lightweight Bitcoin Wallet",
+    description="Lightweight DeepOnion Wallet",
     author="Thomas Voegtlin",
     author_email="thomasv@electrum.org",
     license="MIT Licence",
-    url="https://electrum.org",
-    long_description="""Lightweight Bitcoin Wallet"""
+    url="http://deeponion.org",
+    long_description="""Lightweight DeepOnion Wallet"""
 )
