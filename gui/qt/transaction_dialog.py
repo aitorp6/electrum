@@ -31,14 +31,14 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
-from electrum.bitcoin import base_encode
-from electrum.i18n import _
-from electrum.plugins import run_hook
-from electrum import simple_config
+from electrum_deeponion.bitcoin import base_encode
+from electrum_deeponion.i18n import _
+from electrum_deeponion.plugins import run_hook
+from electrum_deeponion import simple_config
 
-from electrum.util import bfh
-from electrum.wallet import AddTransactionException
-from electrum.transaction import SerializationError
+from electrum_deeponion.util import bfh
+from electrum_deeponion.wallet import AddTransactionException
+from electrum_deeponion.transaction import SerializationError
 
 from .util import *
 

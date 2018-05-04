@@ -39,19 +39,19 @@ import PyQt5.QtCore as QtCore
 from .exception_window import Exception_Hook
 from PyQt5.QtWidgets import *
 
-from electrum import keystore, simple_config
-from electrum.bitcoin import COIN, is_address, TYPE_ADDRESS
-from electrum import constants
-from electrum.plugins import run_hook
-from electrum.i18n import _
-from electrum.util import (format_time, format_satoshis, format_fee_satoshis,
+from electrum_deeponion import keystore, simple_config
+from electrum_deeponion.bitcoin import COIN, is_address, TYPE_ADDRESS
+from electrum_deeponion import constants
+from electrum_deeponion.plugins import run_hook
+from electrum_deeponion.i18n import _
+from electrum_deeponion.util import (format_time, format_satoshis, format_fee_satoshis,
                            format_satoshis_plain, NotEnoughFunds, PrintError,
                            UserCancelled, NoDynamicFeeEstimates, profiler,
                            export_meta, import_meta, bh2u, bfh, InvalidPassword)
-from electrum import Transaction
-from electrum import util, bitcoin, commands, coinchooser
-from electrum import paymentrequest
-from electrum.wallet import Multisig_Wallet, AddTransactionException
+from electrum_deeponion import Transaction
+from electrum_deeponion import util, bitcoin, commands, coinchooser
+from electrum_deeponion import paymentrequest
+from electrum_deeponion.wallet import Multisig_Wallet, AddTransactionException
 
 from .amountedit import AmountEdit, BTCAmountEdit, MyLineEdit, FeerateEdit
 from .qrcodewidget import QRCodeWidget, QRDialog
@@ -80,7 +80,7 @@ class StatusBarButton(QPushButton):
             self.func()
 
 
-from electrum.paymentrequest import PR_PAID
+from electrum_deeponion.paymentrequest import PR_PAID
 
 
 class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
@@ -124,7 +124,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
         self.create_status_bar()
         self.need_update = threading.Event()
 
-        self.decimal_point = config.get('decimal_point', 5)
+        self.decimal_point = config.get('decimal_point', 8)
         self.num_zeros     = int(config.get('num_zeros',0))
 
         self.completions = QStringListModel()
@@ -159,7 +159,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
         if self.config.get("is_maximized"):
             self.showMaximized()
 
-        self.setWindowIcon(QIcon(":icons/electrum.png"))
+        self.setWindowIcon(QIcon(":icons/electrum-deeponion.png"))
         self.init_menubar()
 
         wrtabs = weakref.proxy(tabs)
@@ -374,7 +374,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
             self.setGeometry(100, 100, 840, 400)
 
     def watching_only_changed(self):
-        name = "Electrum Testnet" if constants.net.TESTNET else "Electrum"
+        name = "Electrum-DeepOnion Testnet" if constants.net.TESTNET else "Electrum"
         title = '%s %s  -  %s' % (name, self.wallet.electrum_version,
                                         self.wallet.basename())
         extra = [self.wallet.storage.get('wallet_type', '?')]
@@ -392,7 +392,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
         if self.wallet.is_watching_only():
             msg = ' '.join([
                 _("This wallet is watching-only."),
-                _("This means you will not be able to spend Bitcoins with it."),
+                _("This means you will not be able to spend Onions with it."),
                 _("Make sure you own the seed phrase or the private keys, before you request Bitcoins to be sent to this wallet.")
             ])
             self.show_warning(msg, title=_('Information'))
@@ -553,14 +553,14 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
         d = self.network.get_donation_address()
         if d:
             host = self.network.get_parameters()[0]
-            self.pay_to_URI('bitcoin:%s?message=donation for %s'%(d, host))
+            self.pay_to_URI('onion:%s?message=donation for %s'%(d, host))
         else:
             self.show_error(_('No donation address for this server'))
 
     def show_about(self):
-        QMessageBox.about(self, "Electrum",
+        QMessageBox.about(self, "Electrum-DeepOnion",
             _("Version")+" %s" % (self.wallet.electrum_version) + "\n\n" +
-                _("Electrum's focus is speed, with low resource usage and simplifying Bitcoin. You do not need to perform regular backups, because your wallet can be recovered from a secret phrase that you can memorize or write on paper. Startup times are instant because it operates in conjunction with high-performance servers that handle the most complicated parts of the Bitcoin system."  + "\n\n" +
+                _("Electrum's focus is speed, with low resource usage and simplifying DeepOnion. You do not need to perform regular backups, because your wallet can be recovered from a secret phrase that you can memorize or write on paper. Startup times are instant because it operates in conjunction with high-performance servers that handle the most complicated parts of the Bitcoin system."  + "\n\n" +
                 _("Uses icons from the Icons8 icon pack (icons8.com).")))
 
     def show_report_bug(self):
@@ -570,7 +570,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
             _("Before reporting a bug, upgrade to the most recent version of Electrum (latest release or git HEAD), and include the version number in your report."),
             _("Try to explain not only what the bug is, but how it occurs.")
          ])
-        self.show_message(msg, title="Electrum - " + _("Reporting Bugs"))
+        self.show_message(msg, title="Electrum-DeepOnion - " + _("Reporting Bugs"))
 
     def notify_transactions(self):
         if not self.network or not self.network.is_connected():
@@ -600,9 +600,9 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
         if self.tray:
             try:
                 # this requires Qt 5.9
-                self.tray.showMessage("Electrum", message, QIcon(":icons/electrum_dark_icon"), 20000)
+                self.tray.showMessage("Electrum-DeepOnion", message, QIcon(":icons/electrum_dark_icon"), 20000)
             except TypeError:
-                self.tray.showMessage("Electrum", message, QSystemTrayIcon.Information, 20000)
+                self.tray.showMessage("Electrum-DeepOnion", message, QSystemTrayIcon.Information, 20000)
 
 
 
@@ -657,11 +657,11 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
     def base_unit(self):
         assert self.decimal_point in [2, 5, 8]
         if self.decimal_point == 2:
-            return 'bits'
+            return 'uONION'
         if self.decimal_point == 5:
-            return 'mBTC'
+            return 'mONION'
         if self.decimal_point == 8:
-            return 'BTC'
+            return 'ONION'
         raise Exception('Unknown base unit')
 
     def connect_fields(self, window, btc_e, fiat_e, fee_e):
@@ -788,7 +788,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
         self.receive_address_e = ButtonsLineEdit()
         self.receive_address_e.addCopyButton(self.app)
         self.receive_address_e.setReadOnly(True)
-        msg = _('Bitcoin address where the payment should be received. Note that each payment request uses a different Bitcoin address.')
+        msg = _('DeepOnion address where the payment should be received. Note that each payment request uses a different Bitcoin address.')
         self.receive_address_label = HelpLabel(_('Receiving address'), msg)
         self.receive_address_e.textChanged.connect(self.update_receive_qr)
         self.receive_address_e.setFocusPolicy(Qt.ClickFocus)
@@ -818,8 +818,8 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
         msg = ' '.join([
             _('Expiration date of your request.'),
             _('This information is seen by the recipient if you send them a signed payment request.'),
-            _('Expired requests have to be deleted manually from your list, in order to free the corresponding Bitcoin addresses.'),
-            _('The bitcoin address never expires and will always be part of this electrum wallet.'),
+            _('Expired requests have to be deleted manually from your list, in order to free the corresponding DeepOnion addresses.'),
+            _('The DeepOnion address never expires and will always be part of this electrum wallet.'),
         ])
         grid.addWidget(HelpLabel(_('Request expires'), msg), 3, 0)
         grid.addWidget(self.expires_combo, 3, 1)
@@ -1045,7 +1045,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
         self.amount_e = BTCAmountEdit(self.get_decimal_point)
         self.payto_e = PayToEdit(self)
         msg = _('Recipient of the funds.') + '\n\n'\
-              + _('You may enter a Bitcoin address, a label from your list of contacts (a list of completions will be proposed), or an alias (email-like address that forwards to a Bitcoin address)')
+              + _('You may enter a DeepOnion address, a label from your list of contacts (a list of completions will be proposed), or an alias (email-like address that forwards to a Bitcoin address)')
         payto_label = HelpLabel(_('Pay to'), msg)
         grid.addWidget(payto_label, 1, 0)
         grid.addWidget(self.payto_e, 1, 1, 1, -1)
@@ -1092,7 +1092,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
         hbox.addStretch(1)
         grid.addLayout(hbox, 4, 4)
 
-        msg = _('Bitcoin transactions are in general not free. A transaction fee is paid by the sender of the funds.') + '\n\n'\
+        msg = _('DeepOnion transactions are in general not free. A transaction fee is paid by the sender of the funds.') + '\n\n'\
               + _('The amount of fee can be decided freely by the sender. However, transactions with low fees take more time to be processed.') + '\n\n'\
               + _('A suggested fee is automatically added to this field. You may override it. The suggested fee increases with the size of the transaction.')
         self.fee_e_label = HelpLabel(_('Fee'), msg)
@@ -1476,10 +1476,10 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
 
         for _type, addr, amount in outputs:
             if addr is None:
-                self.show_error(_('Bitcoin Address is None'))
+                self.show_error(_('DeepOnion Address is None'))
                 return
             if _type == TYPE_ADDRESS and not bitcoin.is_address(addr):
-                self.show_error(_('Invalid Bitcoin Address'))
+                self.show_error(_('Invalid DeepOnion Address'))
                 return
             if amount is None:
                 self.show_error(_('Invalid Amount'))
@@ -1699,7 +1699,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
         try:
             out = util.parse_URI(URI, self.on_pr)
         except BaseException as e:
-            self.show_error(_('Invalid bitcoin URI:') + '\n' + str(e))
+            self.show_error(_('Invalid deeponion URI:') + '\n' + str(e))
             return
         self.show_send_tab()
         r = out.get('r')
@@ -1957,7 +1957,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
         self.send_button.setVisible(not self.wallet.is_watching_only())
 
     def change_password_dialog(self):
-        from electrum.storage import STO_EV_XPUB_PW
+        from electrum_deeponion.storage import STO_EV_XPUB_PW
         if self.wallet.get_available_storage_encryption_version() == STO_EV_XPUB_PW:
             from .password_dialog import ChangePasswordDialogForHW
             d = ChangePasswordDialogForHW(self, self.wallet)
@@ -2147,7 +2147,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
         address  = address.text().strip()
         message = message.toPlainText().strip()
         if not bitcoin.is_address(address):
-            self.show_message(_('Invalid Bitcoin address.'))
+            self.show_message(_('Invalid DeepOnion address.'))
             return
         if self.wallet.is_watching_only():
             self.show_message(_('This is a watching-only wallet.'))
@@ -2175,7 +2175,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
         address  = address.text().strip()
         message = message.toPlainText().strip().encode('utf-8')
         if not bitcoin.is_address(address):
-            self.show_message(_('Invalid Bitcoin address.'))
+            self.show_message(_('Invalid DeepOnion address.'))
             return
         try:
             # This can throw on invalid base64
@@ -2298,7 +2298,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
         return d.run()
 
     def tx_from_text(self, txt):
-        from electrum.transaction import tx_from_str
+        from electrum_deeponion.transaction import tx_from_str
         try:
             tx = tx_from_str(txt)
             return Transaction(tx)
@@ -2307,7 +2307,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
             return
 
     def read_tx_from_qrcode(self):
-        from electrum import qrscanner
+        from electrum_deeponion import qrscanner
         try:
             data = qrscanner.scan_barcode(self.config.get_video_device())
         except BaseException as e:
@@ -2316,7 +2316,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
         if not data:
             return
         # if the user scanned a bitcoin URI
-        if str(data).startswith("bitcoin:"):
+        if str(data).startswith("deeponion:"):
             self.pay_to_URI(data)
             return
         # else if the user scanned an offline signed tx
@@ -2356,7 +2356,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
             self.show_transaction(tx)
 
     def do_process_from_txid(self):
-        from electrum import transaction
+        from electrum_deeponion import transaction
         txid, ok = QInputDialog.getText(self, _('Lookup transaction'), _('Transaction ID') + ':')
         if ok and txid:
             txid = str(txid).strip()
@@ -2391,7 +2391,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
         e.setReadOnly(True)
         vbox.addWidget(e)
 
-        defaultname = 'electrum-private-keys.csv'
+        defaultname = 'electrum-deeponion-private-keys.csv'
         select_msg = _('Select file to export your private keys to')
         hbox, filename_e, csv_button = filename_field(self, self.config, defaultname, select_msg)
         vbox.addLayout(hbox)
@@ -2531,7 +2531,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
         address_e.textChanged.connect(on_address)
         if not d.exec_():
             return
-        from electrum.wallet import sweep_preparations
+        from electrum_deeponion.wallet import sweep_preparations
         try:
             self.do_clear()
             coins, keypairs = sweep_preparations(get_pk(), self.network)
@@ -2604,7 +2604,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
         lang_help = _('Select which language is used in the GUI (after restart).')
         lang_label = HelpLabel(_('Language') + ':', lang_help)
         lang_combo = QComboBox()
-        from electrum.i18n import languages
+        from electrum_deeponion.i18n import languages
         lang_combo.addItems(list(languages.values()))
         lang_keys = list(languages.keys())
         lang_cur_setting = self.config.get("language", '')
@@ -2727,9 +2727,9 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
         SSL_id_e.setReadOnly(True)
         id_widgets.append((SSL_id_label, SSL_id_e))
 
-        units = ['BTC', 'mBTC', 'bits']
+        units = ['ONION', 'mONION', 'uONION']
         msg = (_('Base unit of your wallet.')
-               + '\n1 BTC = 1000 mBTC. 1 mBTC = 1000 bits.\n'
+               + '\n1 ONION = 1000 mONION. 1 mONION = 1000 uONION.\n'
                + _('This setting affects the Send tab, and all balance related fields.'))
         unit_label = HelpLabel(_('Base unit') + ':', msg)
         unit_combo = QComboBox()
@@ -2741,11 +2741,11 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
                 return
             edits = self.amount_e, self.fee_e, self.receive_amount_e
             amounts = [edit.get_amount() for edit in edits]
-            if unit_result == 'BTC':
+            if unit_result == 'ONION':
                 self.decimal_point = 8
-            elif unit_result == 'mBTC':
+            elif unit_result == 'mONION':
                 self.decimal_point = 5
-            elif unit_result == 'bits':
+            elif unit_result == 'uONION':
                 self.decimal_point = 2
             else:
                 raise Exception('Unknown base unit')
@@ -2772,7 +2772,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
         block_ex_combo.currentIndexChanged.connect(on_be)
         gui_widgets.append((block_ex_label, block_ex_combo))
 
-        from electrum import qrscanner
+        from electrum_deeponion import qrscanner
         system_cameras = qrscanner._find_system_cameras()
         qr_combo = QComboBox()
         qr_combo.addItem("Default","default")

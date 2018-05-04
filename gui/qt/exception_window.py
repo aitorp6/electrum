@@ -35,8 +35,8 @@ import PyQt5.QtCore as QtCore
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import *
 
-from electrum.i18n import _
-from electrum import ELECTRUM_VERSION, bitcoin, constants
+from electrum_deeponion.i18n import _
+from electrum_deeponion import ELECTRUM_VERSION, bitcoin, constants
 
 from .util import MessageBoxMixin
 
@@ -63,7 +63,7 @@ class Exception_Window(QWidget, MessageBoxMixin):
         self.exc_args = (exctype, value, tb)
         self.main_window = main_window
         QWidget.__init__(self)
-        self.setWindowTitle('Electrum - ' + _('An Error Occurred'))
+        self.setWindowTitle('Electrum-DeepOnion - ' + _('An Error Occurred'))
         self.setMinimumSize(600, 300)
 
         main_box = QVBoxLayout()
