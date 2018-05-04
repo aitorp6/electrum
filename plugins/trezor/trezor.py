@@ -2,14 +2,14 @@ from binascii import hexlify, unhexlify
 import traceback
 import sys
 
-from electrum.util import bfh, bh2u, versiontuple, UserCancelled
-from electrum.bitcoin import (b58_address_to_hash160, xpub_from_pubkey,
+from electrum_deeponion.util import bfh, bh2u, versiontuple, UserCancelled
+from electrum_deeponion.bitcoin import (b58_address_to_hash160, xpub_from_pubkey,
                               TYPE_ADDRESS, TYPE_SCRIPT, is_address)
-from electrum import constants
-from electrum.i18n import _
-from electrum.plugins import BasePlugin, Device
-from electrum.transaction import deserialize, Transaction
-from electrum.keystore import Hardware_KeyStore, is_xpubkey, parse_xpubkey
+from electrum_deeponion import constants
+from electrum_deeponion.i18n import _
+from electrum_deeponion.plugins import BasePlugin, Device
+from electrum_deeponion.transaction import deserialize, Transaction
+from electrum_deeponion.keystore import Hardware_KeyStore, is_xpubkey, parse_xpubkey
 
 from ..hw_wallet import HW_PluginBase
 
@@ -176,7 +176,7 @@ class TrezorPlugin(HW_PluginBase):
         return client
 
     def get_coin_name(self):
-        return "Testnet" if constants.net.TESTNET else "Bitcoin"
+        return "Testnet" if constants.net.TESTNET else "DeepOnion"
 
     def initialize_device(self, device_id, wizard, handler):
         # Initialization method

@@ -4,17 +4,17 @@
 #
 
 try:
-    import electrum
-    from electrum.bitcoin import TYPE_ADDRESS, push_script, var_int, msg_magic, Hash, verify_message, pubkey_from_signature, point_to_ser, public_key_to_p2pkh, EncodeAES, DecodeAES, MyVerifyingKey, is_address
-    from electrum.bitcoin import serialize_xpub, deserialize_xpub
-    from electrum.wallet import Standard_Wallet
-    from electrum import constants
-    from electrum.transaction import Transaction
-    from electrum.i18n import _
-    from electrum.keystore import Hardware_KeyStore
+    import electrum_deeponion as electrum
+    from electrum_deeponion.bitcoin import TYPE_ADDRESS, push_script, var_int, msg_magic, Hash, verify_message, pubkey_from_signature, point_to_ser, public_key_to_p2pkh, EncodeAES, DecodeAES, MyVerifyingKey, is_address
+    from electrum_deeponion.bitcoin import serialize_xpub, deserialize_xpub
+    from electrum_deeponion.wallet import Standard_Wallet
+    from electrum_deeponion import constants
+    from electrum_deeponion.transaction import Transaction
+    from electrum_deeponion.i18n import _
+    from electrum_deeponion.keystore import Hardware_KeyStore
     from ..hw_wallet import HW_PluginBase
-    from electrum.util import print_error, to_string, UserCancelled
-    from electrum.base_wizard import ScriptTypeNotSupported, HWD_SETUP_NEW_WALLET
+    from electrum_deeponion.util import print_error, to_string, UserCancelled
+    from electrum_deeponion.base_wizard import ScriptTypeNotSupported, HWD_SETUP_NEW_WALLET
 
     import time
     import hid
@@ -290,7 +290,7 @@ class DigitalBitbox_Client():
 
     def dbb_generate_wallet(self):
         key = self.stretch_key(self.password)
-        filename = ("Electrum-" + time.strftime("%Y-%m-%d-%H-%M-%S") + ".pdf")
+        filename = ("Electrum-ONION-" + time.strftime("%Y-%m-%d-%H-%M-%S") + ".pdf")
         msg = ('{"seed":{"source": "create", "key": "%s", "filename": "%s", "entropy": "%s"}}' % (key, filename, 'Digital Bitbox Electrum Plugin')).encode('utf8')
         reply = self.hid_send_encrypt(msg)
         if 'error' in reply:

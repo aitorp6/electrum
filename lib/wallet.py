@@ -1205,7 +1205,7 @@ class Abstract_Wallet(PrintError):
             _type, data, value = o
             if _type == TYPE_ADDRESS:
                 if not is_address(data):
-                    raise Exception("Invalid deeponion address: {}".format(data))
+                    raise Exception("Invalid DeepOnion address: {}".format(data))
             if value == '!':
                 if i_max is not None:
                     raise Exception("More than one output set to spend max")

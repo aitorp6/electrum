@@ -42,11 +42,11 @@ from PyQt5.QtCore import *
 from PyQt5.QtWidgets import (QVBoxLayout, QLabel, QGridLayout, QLineEdit,
                              QInputDialog)
 
-from electrum.plugins import BasePlugin, hook
-from electrum.paymentrequest import PaymentRequest
-from electrum.i18n import _
-from electrum.util import PrintError
-from electrum_gui.qt.util import (EnterButton, Buttons, CloseButton, OkButton,
+from electrum_deeponion.plugins import BasePlugin, hook
+from electrum_deeponion.paymentrequest import PaymentRequest
+from electrum_deeponion.i18n import _
+from electrum_deeponion.util import PrintError
+from electrum_deeponion_gui.qt.util import (EnterButton, Buttons, CloseButton, OkButton,
                                   WindowModalDialog, get_parent_main_window)
 
 
@@ -77,7 +77,7 @@ class Processor(threading.Thread, PrintError):
                 p = [p]
                 continue
             for item in p:
-                if item.get_content_type() == "application/bitcoin-paymentrequest":
+                if item.get_content_type() == "application/deeponion-paymentrequest":
                     pr_str = item.get_payload()
                     pr_str = base64.b64decode(pr_str)
                     self.on_receive(pr_str)
@@ -101,10 +101,10 @@ class Processor(threading.Thread, PrintError):
         msg['Subject'] = message
         msg['To'] = recipient
         msg['From'] = self.username
-        part = MIMEBase('application', "bitcoin-paymentrequest")
+        part = MIMEBase('application', "deeponion-paymentrequest")
         part.set_payload(payment_request)
         encode_base64(part)
-        part.add_header('Content-Disposition', 'attachment; filename="payreq.btc"')
+        part.add_header('Content-Disposition', 'attachment; filename="payreq.onion"')
         msg.attach(part)
         try:
             s = smtplib.SMTP_SSL(self.imap_server, timeout=2)
@@ -166,7 +166,7 @@ class Plugin(BasePlugin):
         menu.addAction(_("Send via e-mail"), lambda: self.send(window, addr))
 
     def send(self, window, addr):
-        from electrum import paymentrequest
+        from electrum_deeponion import paymentrequest
         r = window.wallet.receive_requests.get(addr)
         message = r.get('memo', '')
         if r.get('signature'):
