@@ -40,7 +40,30 @@ def inv_dict(d):
     return {v: k for k, v in d.items()}
 
 
+<<<<<<< HEAD
 base_units = {'ONION':8, 'mONION':5, 'uONION':2}
+=======
+base_units = {'BTC':8, 'mBTC':5, 'bits':2, 'sat':0}
+base_units_inverse = inv_dict(base_units)
+base_units_list = ['BTC', 'mBTC', 'bits', 'sat']  # list(dict) does not guarantee order
+
+
+def decimal_point_to_base_unit_name(dp: int) -> str:
+    # e.g. 8 -> "BTC"
+    try:
+        return base_units_inverse[dp]
+    except KeyError:
+        raise Exception('Unknown base unit')
+
+
+def base_unit_name_to_decimal_point(unit_name: str) -> int:
+    # e.g. "BTC" -> 8
+    try:
+        return base_units[unit_name]
+    except KeyError:
+        raise Exception('Unknown base unit')
+
+>>>>>>> e523b657675ffeb2013de898acb7524a0537fefe
 
 def normalize_version(v):
     return [int(x) for x in re.sub(r'(\.0+)*$','', v).split(".")]

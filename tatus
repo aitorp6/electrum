@@ -1,0 +1,164 @@
+[1mdiff --cc gui/qt/amountedit.py[m
+[1mindex d5c53943,9c8a10bb..00000000[m
+[1m--- a/gui/qt/amountedit.py[m
+[1m+++ b/gui/qt/amountedit.py[m
+[36m@@@ -5,7 -5,7 +5,11 @@@[m [mfrom PyQt5.QtGui import [m
+  from PyQt5.QtWidgets import (QLineEdit, QStyle, QStyleOptionFrame)[m
+  [m
+  from decimal import Decimal[m
+[32m++<<<<<<< HEAD[m
+[32m +from electrum_deeponion.util import format_satoshis_plain[m
+[32m++=======[m
+[32m+ from electrum.util import format_satoshis_plain, decimal_point_to_base_unit_name[m
+[32m++>>>>>>> e523b657675ffeb2013de898acb7524a0537fefe[m
+  [m
+  [m
+  class MyLineEdit(QLineEdit):[m
+[36m@@@ -80,14 -80,7 +84,18 @@@[m [mclass BTCAmountEdit(AmountEdit)[m
+          self.decimal_point = decimal_point[m
+  [m
+      def _base_unit(self):[m
+[32m++<<<<<<< HEAD[m
+[32m +        p = self.decimal_point()[m
+[32m +        if p == 8:[m
+[32m +            return 'ONION'[m
+[32m +        if p == 5:[m
+[32m +            return 'mONION'[m
+[32m +        if p == 2:[m
+[32m +            return 'uONION'[m
+[32m +        raise Exception('Unknown base unit')[m
+[32m++=======[m
+[32m+         return decimal_point_to_base_unit_name(self.decimal_point())[m
+[32m++>>>>>>> e523b657675ffeb2013de898acb7524a0537fefe[m
+  [m
+      def get_amount(self):[m
+          try:[m
+[1mdiff --cc gui/qt/main_window.py[m
+[1mindex 5ba129f6,a3a94487..00000000[m
+[1m--- a/gui/qt/main_window.py[m
+[1m+++ b/gui/qt/main_window.py[m
+[36m@@@ -39,19 -39,21 +39,29 @@@[m [mimport PyQt5.QtCore as QtCor[m
+  from .exception_window import Exception_Hook[m
+  from PyQt5.QtWidgets import *[m
+  [m
+[31m -from electrum import keystore, simple_config[m
+[31m -from electrum.bitcoin import COIN, is_address, TYPE_ADDRESS[m
+[31m -from electrum import constants[m
+[31m -from electrum.plugins import run_hook[m
+[31m -from electrum.i18n import _[m
+[31m -from electrum.util import (format_time, format_satoshis, format_fee_satoshis,[m
+[32m +from electrum_deeponion import keystore, simple_config[m
+[32m +from electrum_deeponion.bitcoin import COIN, is_address, TYPE_ADDRESS[m
+[32m +from electrum_deeponion import constants[m
+[32m +from electrum_deeponion.plugins import run_hook[m
+[32m +from electrum_deeponion.i18n import _[m
+[32m +from electrum_deeponion.util import (format_time, format_satoshis, format_fee_satoshis,[m
+                             format_satoshis_plain, NotEnoughFunds, PrintError,[m
+                             UserCancelled, NoDynamicFeeEstimates, profiler,[m
+[32m++<<<<<<< HEAD[m
+[32m +                           export_meta, import_meta, bh2u, bfh, InvalidPassword)[m
+[32m +from electrum_deeponion import Transaction[m
+[32m +from electrum_deeponion import util, bitcoin, commands, coinchooser[m
+[32m +from electrum_deeponion import paymentrequest[m
+[32m +from electrum_deeponion.wallet import Multisig_Wallet, AddTransactionException[m
+[32m++=======[m
+[32m+                            export_meta, import_meta, bh2u, bfh, InvalidPassword,[m
+[32m+                            base_units, base_units_list, base_unit_name_to_decimal_point,[m
+[32m+                            decimal_point_to_base_unit_name)[m
+[32m+ from electrum import Transaction[m
+[32m+ from electrum import util, bitcoin, commands, coinchooser[m
+[32m+ from electrum import paymentrequest[m
+[32m+ from electrum.wallet import Multisig_Wallet, AddTransactionException[m
+[32m++>>>>>>> e523b657675ffeb2013de898acb7524a0537fefe[m
+  [m
+  from .amountedit import AmountEdit, BTCAmountEdit, MyLineEdit, FeerateEdit[m
+  from .qrcodewidget import QRCodeWidget, QRDialog[m
+[36m@@@ -655,14 -657,7 +665,18 @@@[m [mclass ElectrumWindow(QMainWindow, Messa[m
+          return self.decimal_point[m
+  [m
+      def base_unit(self):[m
+[32m++<<<<<<< HEAD[m
+[32m +        assert self.decimal_point in [2, 5, 8][m
+[32m +        if self.decimal_point == 2:[m
+[32m +            return 'uONION'[m
+[32m +        if self.decimal_point == 5:[m
+[32m +            return 'mONION'[m
+[32m +        if self.decimal_point == 8:[m
+[32m +            return 'ONION'[m
+[32m +        raise Exception('Unknown base unit')[m
+[32m++=======[m
+[32m+         return decimal_point_to_base_unit_name(self.decimal_point)[m
+[32m++>>>>>>> e523b657675ffeb2013de898acb7524a0537fefe[m
+  [m
+      def connect_fields(self, window, btc_e, fiat_e, fee_e):[m
+  [m
+[36m@@@ -2727,9 -2722,9 +2741,15 @@@[m
+          SSL_id_e.setReadOnly(True)[m
+          id_widgets.append((SSL_id_label, SSL_id_e))[m
+  [m
+[32m++<<<<<<< HEAD[m
+[32m +        units = ['ONION', 'mONION', 'uONION'][m
+[32m +        msg = (_('Base unit of your wallet.')[m
+[32m +               + '\n1 ONION = 1000 mONION. 1 mONION = 1000 uONION.\n'[m
+[32m++=======[m
+[32m+         units = base_units_list[m
+[32m+         msg = (_('Base unit of your wallet.')[m
+[32m+                + '\n1 BTC = 1000 mBTC. 1 mBTC = 1000 bits. 1 bit = 100 sat.\n'[m
+[32m++>>>>>>> e523b657675ffeb2013de898acb7524a0537fefe[m
+                 + _('This setting affects the Send tab, and all balance related fields.'))[m
+          unit_label = HelpLabel(_('Base unit') + ':', msg)[m
+          unit_combo = QComboBox()[m
+[36m@@@ -2741,14 -2736,7 +2761,18 @@@[m
+                  return[m
+              edits = self.amount_e, self.fee_e, self.receive_amount_e[m
+              amounts = [edit.get_amount() for edit in edits][m
+[32m++<<<<<<< HEAD[m
+[32m +            if unit_result == 'ONION':[m
+[32m +                self.decimal_point = 8[m
+[32m +            elif unit_result == 'mONION':[m
+[32m +                self.decimal_point = 5[m
+[32m +            elif unit_result == 'uONION':[m
+[32m +                self.decimal_point = 2[m
+[32m +            else:[m
+[32m +                raise Exception('Unknown base unit')[m
+[32m++=======[m
+[32m+             self.decimal_point = base_unit_name_to_decimal_point(unit_result)[m
+[32m++>>>>>>> e523b657675ffeb2013de898acb7524a0537fefe[m
+              self.config.set_key('decimal_point', self.decimal_point, True)[m
+              nz.setMaximum(self.decimal_point)[m
+              self.history_list.update()[m
+[1mdiff --cc lib/util.py[m
+[1mindex 999a77c4,1acc982f..00000000[m
+[1m--- a/lib/util.py[m
+[1m+++ b/lib/util.py[m
+[36m@@@ -40,7 -40,26 +40,30 @@@[m [mdef inv_dict(d)[m
+      return {v: k for k, v in d.items()}[m
+  [m
+  [m
+[32m++<<<<<<< HEAD[m
+[32m +base_units = {'ONION':8, 'mONION':5, 'uONION':2}[m
+[32m++=======[m
+[32m+ base_units = {'BTC':8, 'mBTC':5, 'bits':2, 'sat':0}[m
+[32m+ base_units_inverse = inv_dict(base_units)[m
+[32m+ base_units_list = ['BTC', 'mBTC', 'bits', 'sat']  # list(dict) does not guarantee order[m
+[32m+ [m
+[32m+ [m
+[32m+ def decimal_point_to_base_unit_name(dp: int) -> str:[m
+[32m+     # e.g. 8 -> "BTC"[m
+[32m+     try:[m
+[32m+         return base_units_inverse[dp][m
+[32m+     except KeyError:[m
+[32m+         raise Exception('Unknown base unit')[m
+[32m+ [m
+[32m+ [m
+[32m+ def base_unit_name_to_decimal_point(unit_name: str) -> int:[m
+[32m+     # e.g. "BTC" -> 8[m
+[32m+     try:[m
+[32m+         return base_units[unit_name][m
+[32m+     except KeyError:[m
+[32m+         raise Exception('Unknown base unit')[m
+[32m+ [m
+[32m++>>>>>>> e523b657675ffeb2013de898acb7524a0537fefe[m
+  [m
+  def normalize_version(v):[m
+      return [int(x) for x in re.sub(r'(\.0+)*$','', v).split(".")][m
