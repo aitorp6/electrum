@@ -5,7 +5,7 @@ Electrum - Lightweight DeepOnion client
 
   Licence: MIT Licence
   Author: Thomas Voegtlin
-  Porte Mantainer: aitorp6
+  Port Mantainer: aitorp6
   Language: Python
   Homepage: https://electrum.org/
 
