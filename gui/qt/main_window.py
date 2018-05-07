@@ -50,10 +50,10 @@ from electrum_deeponion.util import (format_time, format_satoshis, format_fee_sa
                            export_meta, import_meta, bh2u, bfh, InvalidPassword,
                            base_units, base_units_list, base_unit_name_to_decimal_point,
                            decimal_point_to_base_unit_name)
-from electrum import Transaction
-from electrum import util, bitcoin, commands, coinchooser
-from electrum import paymentrequest
-from electrum.wallet import Multisig_Wallet, AddTransactionException
+from electrum_deeponion import Transaction
+from electrum_deeponion import util, bitcoin, commands, coinchooser
+from electrum_deeponion import paymentrequest
+from electrum_deeponion.wallet import Multisig_Wallet, AddTransactionException
 
 from .amountedit import AmountEdit, BTCAmountEdit, MyLineEdit, FeerateEdit
 from .qrcodewidget import QRCodeWidget, QRDialog
