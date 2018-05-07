@@ -5,11 +5,7 @@ from PyQt5.QtGui import *
 from PyQt5.QtWidgets import (QLineEdit, QStyle, QStyleOptionFrame)
 
 from decimal import Decimal
-<<<<<<< HEAD
 from electrum_deeponion.util import format_satoshis_plain, decimal_point_to_base_unit_name
-=======
-from electrum.util import format_satoshis_plain, decimal_point_to_base_unit_name
->>>>>>> e523b657675ffeb2013de898acb7524a0537fefe
 
 
 class MyLineEdit(QLineEdit):
@@ -84,18 +80,7 @@ class BTCAmountEdit(AmountEdit):
         self.decimal_point = decimal_point
 
     def _base_unit(self):
-<<<<<<< HEAD
-        p = self.decimal_point()
-        if p == 8:
-            return 'ONION'
-        if p == 5:
-            return 'mONION'
-        if p == 2:
-            return 'uONION'
-        raise Exception('Unknown base unit')
-=======
         return decimal_point_to_base_unit_name(self.decimal_point())
->>>>>>> e523b657675ffeb2013de898acb7524a0537fefe
 
     def get_amount(self):
         try:

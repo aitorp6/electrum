@@ -47,13 +47,6 @@ from electrum_deeponion.i18n import _
 from electrum_deeponion.util import (format_time, format_satoshis, format_fee_satoshis,
                            format_satoshis_plain, NotEnoughFunds, PrintError,
                            UserCancelled, NoDynamicFeeEstimates, profiler,
-<<<<<<< HEAD
-                           export_meta, import_meta, bh2u, bfh, InvalidPassword)
-from electrum_deeponion import Transaction
-from electrum_deeponion import util, bitcoin, commands, coinchooser
-from electrum_deeponion import paymentrequest
-from electrum_deeponion.wallet import Multisig_Wallet, AddTransactionException
-=======
                            export_meta, import_meta, bh2u, bfh, InvalidPassword,
                            base_units, base_units_list, base_unit_name_to_decimal_point,
                            decimal_point_to_base_unit_name)
@@ -61,7 +54,6 @@ from electrum import Transaction
 from electrum import util, bitcoin, commands, coinchooser
 from electrum import paymentrequest
 from electrum.wallet import Multisig_Wallet, AddTransactionException
->>>>>>> e523b657675ffeb2013de898acb7524a0537fefe
 
 from .amountedit import AmountEdit, BTCAmountEdit, MyLineEdit, FeerateEdit
 from .qrcodewidget import QRCodeWidget, QRDialog
@@ -665,18 +657,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
         return self.decimal_point
 
     def base_unit(self):
-<<<<<<< HEAD
-        assert self.decimal_point in [2, 5, 8]
-        if self.decimal_point == 2:
-            return 'uONION'
-        if self.decimal_point == 5:
-            return 'mONION'
-        if self.decimal_point == 8:
-            return 'ONION'
-        raise Exception('Unknown base unit')
-=======
         return decimal_point_to_base_unit_name(self.decimal_point)
->>>>>>> e523b657675ffeb2013de898acb7524a0537fefe
 
     def connect_fields(self, window, btc_e, fiat_e, fee_e):
 
@@ -2741,15 +2722,9 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
         SSL_id_e.setReadOnly(True)
         id_widgets.append((SSL_id_label, SSL_id_e))
 
-<<<<<<< HEAD
-        units = ['ONION', 'mONION', 'uONION']
-        msg = (_('Base unit of your wallet.')
-               + '\n1 ONION = 1000 mONION. 1 mONION = 1000 uONION.\n'
-=======
         units = base_units_list
         msg = (_('Base unit of your wallet.')
                + '\n1 BTC = 1000 mBTC. 1 mBTC = 1000 bits. 1 bit = 100 sat.\n'
->>>>>>> e523b657675ffeb2013de898acb7524a0537fefe
                + _('This setting affects the Send tab, and all balance related fields.'))
         unit_label = HelpLabel(_('Base unit') + ':', msg)
         unit_combo = QComboBox()
@@ -2761,18 +2736,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
                 return
             edits = self.amount_e, self.fee_e, self.receive_amount_e
             amounts = [edit.get_amount() for edit in edits]
-<<<<<<< HEAD
-            if unit_result == 'ONION':
-                self.decimal_point = 8
-            elif unit_result == 'mONION':
-                self.decimal_point = 5
-            elif unit_result == 'uONION':
-                self.decimal_point = 2
-            else:
-                raise Exception('Unknown base unit')
-=======
             self.decimal_point = base_unit_name_to_decimal_point(unit_result)
->>>>>>> e523b657675ffeb2013de898acb7524a0537fefe
             self.config.set_key('decimal_point', self.decimal_point, True)
             nz.setMaximum(self.decimal_point)
             self.history_list.update()
