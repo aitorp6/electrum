@@ -526,10 +526,10 @@ def DecodeBase58Check(psz):
 # extended WIF for segwit (used in 3.0.x; but still used internally)
 # the keys in this dict should be a superset of what Imported Wallets can import
 SCRIPT_TYPES = {
-    'p2pkh':0,
+    'p2pkh':31,
     'p2wpkh':1,
     'p2wpkh-p2sh':2,
-    'p2sh':5,
+    'p2sh':78,
     'p2wsh':6,
     'p2wsh-p2sh':7
 }
@@ -539,7 +539,7 @@ def serialize_privkey(secret, compressed, txin_type, internal_use=False):
     if internal_use:
         prefix = bytes([(SCRIPT_TYPES[txin_type] + constants.net.WIF_PREFIX) & 255])
     else:
-        prefix = bytes([constants.net.WIF_PREFIX])
+        prefix = bytes([(SCRIPT_TYPES['p2pkh'] + constants.net.WIF_PREFIX) & 255])
     suffix = b'\01' if compressed else b''
     vchIn = prefix + secret + suffix
     base58_wif = EncodeBase58Check(vchIn)
@@ -570,7 +570,7 @@ def deserialize_privkey(key):
         txin_type = inv_dict(SCRIPT_TYPES)[vch[0] - constants.net.WIF_PREFIX]
     else:
         # all other keys must have a fixed first byte
-        if vch[0] != constants.net.WIF_PREFIX:
+        if vch[0] != (SCRIPT_TYPES['p2pkh'] + constants.net.WIF_PREFIX) & 255:
             raise BitcoinException('invalid prefix ({}) for WIF key'.format(vch[0]))
 
     if len(vch) not in [33, 34]:
