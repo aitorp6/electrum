@@ -3,15 +3,16 @@ import hashlib
 import sys
 import traceback
 
-from electrum_deeponion import bitcoin
-from electrum_deeponion.bitcoin import TYPE_ADDRESS, int_to_hex, var_int
-from electrum_deeponion.i18n import _
-from electrum_deeponion.plugins import BasePlugin
-from electrum_deeponion.keystore import Hardware_KeyStore
-from electrum_deeponion.transaction import Transaction
-from electrum_deeponion.wallet import Standard_Wallet
+from electrum import bitcoin
+from electrum.bitcoin import TYPE_ADDRESS, int_to_hex, var_int
+from electrum.i18n import _
+from electrum.plugins import BasePlugin
+from electrum.keystore import Hardware_KeyStore
+from electrum.transaction import Transaction
+from electrum.wallet import Standard_Wallet
 from ..hw_wallet import HW_PluginBase
-from electrum_deeponion.util import print_error, is_verbose, bfh, bh2u, versiontuple
+from electrum.util import print_error, is_verbose, bfh, bh2u, versiontuple
+from electrum.base_wizard import ScriptTypeNotSupported
 
 try:
     import hid
@@ -28,7 +29,7 @@ except ImportError:
 
 MSG_NEEDS_FW_UPDATE_GENERIC = _('Firmware version too old. Please update at') + \
                       ' https://www.ledgerwallet.com'
-MSG_NEEDS_FW_UPDATE_SEGWIT = _('Firmware version (or "DeepOnion" app) too old for Segwit support. Please update at') + \
+MSG_NEEDS_FW_UPDATE_SEGWIT = _('Firmware version (or "Bitcoin" app) too old for Segwit support. Please update at') + \
                       ' https://www.ledgerwallet.com'
 MULTI_OUTPUT_SUPPORT = '1.1.4'
 SEGWIT_SUPPORT = '1.1.10'
@@ -190,7 +191,7 @@ class Ledger_Client():
                 self.perform_hw1_preflight()
             except BTChipException as e:
                 if (e.sw == 0x6d00 or e.sw == 0x6700):
-                    raise Exception(_("Device not in DeepOnion mode")) from e
+                    raise Exception(_("Device not in Bitcoin mode")) from e
                 raise e
             self.preflightDone = True
 
@@ -549,6 +550,7 @@ class LedgerPlugin(HW_PluginBase):
                    (0x2c97, 0x0000), # Blue
                    (0x2c97, 0x0001)  # Nano-S
                  ]
+    SUPPORTED_XTYPES = ('standard', 'p2wpkh-p2sh', 'p2wpkh', 'p2wsh-p2sh', 'p2wsh')
 
     def __init__(self, parent, config, name):
         self.segwit = config.get("segwit")
@@ -592,6 +594,8 @@ class LedgerPlugin(HW_PluginBase):
         client.get_xpub("m/44'/0'", 'standard') # TODO replace by direct derivation once Nano S > 1.1
 
     def get_xpub(self, device_id, derivation, xtype, wizard):
+        if xtype not in self.SUPPORTED_XTYPES:
+            raise ScriptTypeNotSupported(_('This type of script is not supported with {}.').format(self.device))
         devmgr = self.device_manager()
         client = devmgr.client_by_id(device_id)
         client.handler = self.create_handler(wizard)
