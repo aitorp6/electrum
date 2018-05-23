@@ -3,16 +3,16 @@ import hashlib
 import sys
 import traceback
 
-from electrum import bitcoin
-from electrum.bitcoin import TYPE_ADDRESS, int_to_hex, var_int
-from electrum.i18n import _
-from electrum.plugins import BasePlugin
-from electrum.keystore import Hardware_KeyStore
-from electrum.transaction import Transaction
-from electrum.wallet import Standard_Wallet
+from electrum_deeponion import bitcoin
+from electrum_deeponion.bitcoin import TYPE_ADDRESS, int_to_hex, var_int
+from electrum_deeponion.i18n import _
+from electrum_deeponion.plugins import BasePlugin
+from electrum_deeponion.keystore import Hardware_KeyStore
+from electrum_deeponion.transaction import Transaction
+from electrum_deeponion.wallet import Standard_Wallet
 from ..hw_wallet import HW_PluginBase
-from electrum.util import print_error, is_verbose, bfh, bh2u, versiontuple
-from electrum.base_wizard import ScriptTypeNotSupported
+from electrum_deeponion.util import print_error, is_verbose, bfh, bh2u, versiontuple
+from electrum_deeponion.base_wizard import ScriptTypeNotSupported
 
 try:
     import hid
