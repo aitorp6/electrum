@@ -39,21 +39,21 @@ import PyQt5.QtCore as QtCore
 from .exception_window import Exception_Hook
 from PyQt5.QtWidgets import *
 
-from electrum import keystore, simple_config
-from electrum.bitcoin import COIN, is_address, TYPE_ADDRESS
-from electrum import constants
-from electrum.plugins import run_hook
-from electrum.i18n import _
-from electrum.util import (format_time, format_satoshis, format_fee_satoshis,
+from electrum_deeponion import keystore, simple_config
+from electrum_deeponion.bitcoin import COIN, is_address, TYPE_ADDRESS
+from electrum_deeponion import constants
+from electrum_deeponion.plugins import run_hook
+from electrum_deeponion.i18n import _
+from electrum_deeponion.util import (format_time, format_satoshis, format_fee_satoshis,
                            format_satoshis_plain, NotEnoughFunds, PrintError,
                            UserCancelled, NoDynamicFeeEstimates, profiler,
                            export_meta, import_meta, bh2u, bfh, InvalidPassword,
                            base_units, base_units_list, base_unit_name_to_decimal_point,
                            decimal_point_to_base_unit_name, quantize_feerate)
-from electrum import Transaction
-from electrum import util, bitcoin, commands, coinchooser
-from electrum import paymentrequest
-from electrum.wallet import Multisig_Wallet, AddTransactionException
+from electrum_deeponion import Transaction
+from electrum_deeponion import util, bitcoin, commands, coinchooser
+from electrum_deeponion import paymentrequest
+from electrum_deeponion.wallet import Multisig_Wallet, AddTransactionException
 
 from .amountedit import AmountEdit, BTCAmountEdit, MyLineEdit, FeerateEdit
 from .qrcodewidget import QRCodeWidget, QRDialog
@@ -82,7 +82,7 @@ class StatusBarButton(QPushButton):
             self.func()
 
 
-from electrum.paymentrequest import PR_PAID
+from electrum_deeponion.paymentrequest import PR_PAID
 
 
 class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
