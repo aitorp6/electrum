@@ -111,7 +111,7 @@ class Exception_Window(QWidget, MessageBoxMixin):
         self.show()
 
     def send_report(self):
-        if constants.net.GENESIS[-4:] not in ["4943", "e26f"] and ".electrum.org" in report_server:
+        if constants.net.GENESIS[-4:] not in ["2b44", "7b5e"] and ".electrum.org" in report_server:
             # Gah! Some kind of altcoin wants to send us crash reports.
             self.main_window.show_critical(_("Please report this issue manually."))
             return
