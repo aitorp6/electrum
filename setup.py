@@ -65,6 +65,7 @@ setup(
         'electrum_deeponion_plugins.keepkey',
         'electrum_deeponion_plugins.labels',
         'electrum_deeponion_plugins.ledger',
+        'electrum_deeponion_plugins.revealer',
         'electrum_deeponion_plugins.trezor',
         'electrum_deeponion_plugins.digitalbitbox',
         'electrum_deeponion_plugins.trustedcoin',
@@ -76,6 +77,7 @@ setup(
         'electrum_deeponion_plugins': 'plugins',
     },
     package_data={
+<<<<<<< HEAD
         'electrum_deeponion': [
             'servers.json',
             'servers_testnet.json',
@@ -85,8 +87,12 @@ setup(
             'checkpoints_testnet.json',
             'www/index.html',
             'wordlist/*.txt',
+=======
+        '': ['*.txt', '*.json', '*.ttf', '*.otf'],
+        'electrum': [
+>>>>>>> 5a75ce74d775ec5ea789c546f879c7212027ba06
             'locale/*/LC_MESSAGES/electrum.mo',
-        ]
+        ],
     },
     scripts=['electrum-deeponion'],
     data_files=data_files,

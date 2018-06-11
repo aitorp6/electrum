@@ -38,6 +38,7 @@ from kivy.lang import Builder
 from .uix.dialogs.installwizard import InstallWizard
 from .uix.dialogs import InfoBubble
 from .uix.dialogs import OutputList, OutputItem
+from .uix.dialogs import TopLabel, RefLabel
 
 #from kivy.core.window import Window
 #Window.softinput_mode = 'below_target'
@@ -67,7 +68,7 @@ Label.register('Roboto',
                'gui/kivy/data/fonts/Roboto-Bold.ttf')
 
 
-from electrum_deeponion.util import base_units
+from electrum_deeponion.util import base_units, NoDynamicFeeEstimates
 
 
 class ElectrumWindow(App):
@@ -563,6 +564,16 @@ class ElectrumWindow(App):
             from .uix.dialogs.wallets import WalletDialog
             d = WalletDialog()
             d.open()
+        elif name == 'status':
+            popup = Builder.load_file('gui/kivy/uix/ui_screens/'+name+'.kv')
+            master_public_keys_layout = popup.ids.master_public_keys
+            for xpub in self.wallet.get_master_public_keys()[1:]:
+                master_public_keys_layout.add_widget(TopLabel(text=_('Master Public Key')))
+                ref = RefLabel()
+                ref.name = _('Master Public Key')
+                ref.data = xpub
+                master_public_keys_layout.add_widget(ref)
+            popup.open()
         else:
             popup = Builder.load_file('gui/kivy/uix/ui_screens/'+name+'.kv')
             popup.open()
@@ -668,7 +679,11 @@ class ElectrumWindow(App):
             return ''
         addr = str(self.send_screen.screen.address) or self.wallet.dummy_address()
         outputs = [(TYPE_ADDRESS, addr, '!')]
-        tx = self.wallet.make_unsigned_transaction(inputs, outputs, self.electrum_config)
+        try:
+            tx = self.wallet.make_unsigned_transaction(inputs, outputs, self.electrum_config)
+        except NoDynamicFeeEstimates as e:
+            Clock.schedule_once(lambda dt, bound_e=e: self.show_error(str(bound_e)))
+            return ''
         amount = tx.output_value()
         return format_satoshis_plain(amount, self.decimal_point())
 
@@ -705,7 +720,7 @@ class ElectrumWindow(App):
 
     def on_resume(self):
         now = time.time()
-        if self.wallet.has_password and now - self.pause_time > 60:
+        if self.wallet and self.wallet.has_password() and now - self.pause_time > 60:
             self.password_dialog(self.wallet, _('Enter PIN'), None, self.stop)
         if self.nfcscanner:
             self.nfcscanner.nfc_enable()
