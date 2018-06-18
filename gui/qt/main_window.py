@@ -53,7 +53,7 @@ from electrum_deeponion.util import (format_time, format_satoshis, format_fee_sa
 from electrum_deeponion import Transaction
 from electrum_deeponion import util, bitcoin, commands, coinchooser
 from electrum_deeponion import paymentrequest
-from electrum_deeponion.wallet import Multisig_Wallet, AddTransactionException
+from electrum_deeponion.wallet import Multisig_Wallet, AddTransactionException, CannotBumpFee
 
 from .amountedit import AmountEdit, BTCAmountEdit, MyLineEdit, FeerateEdit
 from .qrcodewidget import QRCodeWidget, QRDialog
@@ -3165,7 +3165,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
             return
         try:
             new_tx = self.wallet.bump_fee(tx, delta)
-        except BaseException as e:
+        except CannotBumpFee as e:
             self.show_error(str(e))
             return
         if is_final:

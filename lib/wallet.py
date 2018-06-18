@@ -170,6 +170,9 @@ class UnrelatedTransactionException(AddTransactionException):
         return _("Transaction is unrelated to this wallet.")
 
 
+class CannotBumpFee(Exception): pass
+
+
 class Abstract_Wallet(PrintError):
     """
     Wallet classes are created to handle various address generation methods.
@@ -711,6 +714,7 @@ class Abstract_Wallet(PrintError):
         coins = []
         if domain is None:
             domain = self.get_addresses()
+        domain = set(domain)
         if exclude_frozen:
             domain = set(domain) - self.frozen_addresses
         for addr in domain:
@@ -739,6 +743,7 @@ class Abstract_Wallet(PrintError):
     def get_balance(self, domain=None):
         if domain is None:
             domain = self.get_addresses()
+        domain = set(domain)
         cc = uu = xx = 0
         for addr in domain:
             c, u, x = self.get_addr_balance(addr)
@@ -987,6 +992,7 @@ class Abstract_Wallet(PrintError):
         # get domain
         if domain is None:
             domain = self.get_addresses()
+        domain = set(domain)
         # 1. Get the history of each address in the domain, maintain the
         #    delta of a tx as the sum of its deltas on domain addresses
         tx_deltas = defaultdict(int)
@@ -1220,9 +1226,8 @@ class Abstract_Wallet(PrintError):
         if fixed_fee is None and config.fee_per_kb() is None:
             raise NoDynamicFeeEstimates()
 
-        if not is_sweep:
-            for item in inputs:
-                self.add_input_info(item)
+        for item in inputs:
+            self.add_input_info(item)
 
         # change address
         if change_addr:
@@ -1264,7 +1269,9 @@ class Abstract_Wallet(PrintError):
             outputs[i_max] = (_type, data, 0)
             tx = Transaction.from_io(inputs, outputs[:])
             fee = fee_estimator(tx.estimated_size())
-            amount = max(0, sendable - tx.output_value() - fee)
+            amount = sendable - tx.output_value() - fee
+            if amount < 0:
+                raise NotEnoughFunds()
             outputs[i_max] = (_type, data, amount)
             tx = Transaction.from_io(inputs, outputs[:])
 
@@ -1378,7 +1385,9 @@ class Abstract_Wallet(PrintError):
 
     def bump_fee(self, tx, delta):
         if tx.is_final():
-            raise Exception(_('Cannot bump fee') + ': ' + _('transaction is final'))
+            raise CannotBumpFee(_('Cannot bump fee') + ': ' + _('transaction is final'))
+        tx = Transaction(tx.serialize())
+        tx.deserialize(force_full_parse=True)  # need to parse inputs
         inputs = copy.deepcopy(tx.inputs())
         outputs = copy.deepcopy(tx.outputs())
         for txin in inputs:
@@ -1409,7 +1418,7 @@ class Abstract_Wallet(PrintError):
                 if delta > 0:
                     continue
         if delta > 0:
-            raise Exception(_('Cannot bump fee') + ': ' + _('could not find suitable outputs'))
+            raise CannotBumpFee(_('Cannot bump fee') + ': ' + _('could not find suitable outputs'))
         locktime = self.get_local_height()
         tx_new = Transaction.from_io(inputs, outputs, locktime=locktime)
         tx_new.BIP_LI01_sort()
@@ -2039,12 +2048,7 @@ class Imported_Wallet(Simple_Wallet):
             txin['x_pubkeys'] = [pubkey]
             txin['signatures'] = [None]
         else:
-            redeem_script = self.addresses[address]['redeem_script']
-            num_sig = 2
-            num_keys = 3
-            txin['num_sig'] = num_sig
-            txin['redeem_script'] = redeem_script
-            txin['signatures'] = [None] * num_keys
+            raise NotImplementedError('imported wallets for p2sh are not implemented')
 
     def pubkeys_to_address(self, pubkey):
         for addr, v in self.addresses.items():

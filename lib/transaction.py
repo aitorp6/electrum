@@ -495,7 +495,7 @@ def parse_witness(vds, txin, full_parse: bool):
         return
 
     try:
-        if txin['witness_version'] != 0:
+        if txin.get('witness_version', 0) != 0:
             raise UnknownTxinType()
         if txin['type'] == 'coinbase':
             pass
@@ -652,34 +652,42 @@ class Transaction:
             txin['x_pubkeys'] = x_pubkeys = list(x_pubkeys)
         return pubkeys, x_pubkeys
 
-    def update_signatures(self, raw):
-        """Add new signatures to a transaction"""
+    def update_signatures(self, signatures: Sequence[str]):
+        """Add new signatures to a transaction
+
+        `signatures` is expected to be a list of sigs with signatures[i]
+        intended for self._inputs[i].
+        This is used by the Trezor and KeepKey plugins.
+        """
         if self.is_complete():
             return
-        d = deserialize(raw, force_full_parse=True)
+        if len(self.inputs()) != len(signatures):
+            raise Exception('expected {} signatures; got {}'.format(len(self.inputs()), len(signatures)))
         for i, txin in enumerate(self.inputs()):
             pubkeys, x_pubkeys = self.get_sorted_pubkeys(txin)
-            sigs1 = txin.get('signatures')
-            sigs2 = d['inputs'][i].get('signatures')
-            for sig in sigs2:
-                if sig in sigs1:
+            sig = signatures[i]
+            if sig in txin.get('signatures'):
+                continue
+            pre_hash = Hash(bfh(self.serialize_preimage(i)))
+            sig_string = ecc.sig_string_from_der_sig(bfh(sig[:-2]))
+            for recid in range(4):
+                try:
+                    public_key = ecc.ECPubkey.from_sig_string(sig_string, recid, pre_hash)
+                except ecc.InvalidECPointException:
+                    # the point might not be on the curve for some recid values
                     continue
-                pre_hash = Hash(bfh(self.serialize_preimage(i)))
-                sig_string = ecc.sig_string_from_der_sig(bfh(sig[:-2]))
-                for recid in range(4):
+                pubkey_hex = public_key.get_public_key_hex(compressed=True)
+                if pubkey_hex in pubkeys:
                     try:
-                        public_key = ecc.ECPubkey.from_sig_string(sig_string, recid, pre_hash)
-                    except ecc.InvalidECPointException:
-                        # the point might not be on the curve for some recid values
-                        continue
-                    pubkey_hex = public_key.get_public_key_hex(compressed=True)
-                    if pubkey_hex in pubkeys:
                         public_key.verify_message_hash(sig_string, pre_hash)
-                        j = pubkeys.index(pubkey_hex)
-                        print_error("adding sig", i, j, pubkey_hex, sig)
-                        self.add_signature_to_txin(self._inputs[i], j, sig)
-                        #self._inputs[i]['x_pubkeys'][j] = pubkey
-                        break
+                    except Exception:
+                        traceback.print_exc(file=sys.stderr)
+                        continue
+                    j = pubkeys.index(pubkey_hex)
+                    print_error("adding sig", i, j, pubkey_hex, sig)
+                    self.add_signature_to_txin(self._inputs[i], j, sig)
+                    #self._inputs[i]['x_pubkeys'][j] = pubkey
+                    break
         # redo raw
         self.raw = self.serialize()
 
@@ -689,13 +697,13 @@ class Transaction:
         txin['scriptSig'] = None  # force re-serialization
         txin['witness'] = None    # force re-serialization
 
-    def deserialize(self):
+    def deserialize(self, force_full_parse=False):
         if self.raw is None:
             return
             #self.raw = self.serialize()
         if self._inputs is not None:
             return
-        d = deserialize(self.raw)
+        d = deserialize(self.raw, force_full_parse)
         self._inputs = d['inputs']
         self._outputs = [(x['type'], x['address'], x['value']) for x in d['outputs']]
         self.locktime = d['lockTime']
@@ -978,19 +986,19 @@ class Transaction:
         else:
             return nVersion + txins + txouts + nLocktime
 
-    def hash(self):
-        print("warning: deprecated tx.hash()")
-        return self.txid()
-
     def txid(self):
+        self.deserialize()
         all_segwit = all(self.is_segwit_input(x) for x in self.inputs())
         if not all_segwit and not self.is_complete():
             return None
-        ser = self.serialize(witness=False)
+        ser = self.serialize_to_network(witness=False)
         return bh2u(Hash(bfh(ser))[::-1])
 
     def wtxid(self):
-        ser = self.serialize(witness=True)
+        self.deserialize()
+        if not self.is_complete():
+            return None
+        ser = self.serialize_to_network(witness=True)
         return bh2u(Hash(bfh(ser))[::-1])
 
     def add_inputs(self, inputs):
@@ -1090,29 +1098,32 @@ class Transaction:
         s, r = self.signature_count()
         return r == s
 
-    def sign(self, keypairs):
+    def sign(self, keypairs) -> None:
+        # keypairs:  (x_)pubkey -> secret_bytes
         for i, txin in enumerate(self.inputs()):
-            num = txin['num_sig']
             pubkeys, x_pubkeys = self.get_sorted_pubkeys(txin)
-            for j, x_pubkey in enumerate(x_pubkeys):
-                signatures = list(filter(None, txin['signatures']))
-                if len(signatures) == num:
-                    # txin is complete
+            for j, (pubkey, x_pubkey) in enumerate(zip(pubkeys, x_pubkeys)):
+                if self.is_txin_complete(txin):
                     break
-                if x_pubkey in keypairs.keys():
-                    print_error("adding signature for", x_pubkey)
-                    sec, compressed = keypairs.get(x_pubkey)
-                    pubkey = ecc.ECPrivkey(sec).get_public_key_hex(compressed=compressed)
-                    # add signature
-                    sig = self.sign_txin(i, sec)
-                    self.add_signature_to_txin(txin, j, sig)
-                    #txin['x_pubkeys'][j] = pubkey
-                    txin['pubkeys'][j] = pubkey # needed for fd keys
-                    self._inputs[i] = txin
+                if pubkey in keypairs:
+                    _pubkey = pubkey
+                elif x_pubkey in keypairs:
+                    _pubkey = x_pubkey
+                else:
+                    continue
+                print_error("adding signature for", _pubkey)
+                sec, compressed = keypairs.get(_pubkey)
+                # pubkey might not actually be a 02-04 pubkey for fd keys; so:
+                pubkey = ecc.ECPrivkey(sec).get_public_key_hex(compressed=compressed)
+                # add signature
+                sig = self.sign_txin(i, sec)
+                self.add_signature_to_txin(txin, j, sig)
+                txin['pubkeys'][j] = pubkey  # needed for fd keys
+                self._inputs[i] = txin
         print_error("is_complete", self.is_complete())
         self.raw = self.serialize()
 
-    def sign_txin(self, txin_index, privkey_bytes):
+    def sign_txin(self, txin_index, privkey_bytes) -> str:
         pre_hash = Hash(bfh(self.serialize_preimage(txin_index)))
         privkey = ecc.ECPrivkey(privkey_bytes)
         sig = privkey.sign_transaction(pre_hash)
