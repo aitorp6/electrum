@@ -28,8 +28,8 @@ import os
 
 import requests
 
-from electrum import ELECTRUM_VERSION, constants
-from electrum.i18n import _
+from electrum_deeponion import ELECTRUM_VERSION, constants
+from electrum_deeponion.i18n import _
 
 
 class BaseCrashReporter(object):
