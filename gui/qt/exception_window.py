@@ -89,16 +89,6 @@ class Exception_Window(BaseCrashReporter, QWidget, MessageBoxMixin):
         self.show()
 
     def send_report(self):
-<<<<<<< HEAD
-        if constants.net.GENESIS[-4:] not in ["2b44", "7b5e"] and ".electrum.org" in report_server:
-            # Gah! Some kind of altcoin wants to send us crash reports.
-            self.main_window.show_critical(_("Please report this issue manually."))
-            return
-        report = self.get_traceback_info()
-        report.update(self.get_additional_info())
-        report = json.dumps(report)
-=======
->>>>>>> 12c5474cf126f8bcb01a5cf90b582189f1297cb0
         try:
             response = BaseCrashReporter.send_report(self)
         except BaseException as e:
