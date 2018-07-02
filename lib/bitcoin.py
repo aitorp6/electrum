@@ -423,7 +423,7 @@ def serialize_privkey(secret: bytes, compressed: bool, txin_type: str,
     if internal_use:
         prefix = bytes([(WIF_SCRIPT_TYPES[txin_type] + constants.net.WIF_PREFIX) & 255])
     else:
-        prefix = bytes([(SCRIPT_TYPES['p2pkh'] + constants.net.WIF_PREFIX) & 255])
+        prefix = bytes([(WIF_SCRIPT_TYPES['p2pkh'] + constants.net.WIF_PREFIX) & 255])
     suffix = b'\01' if compressed else b''
     vchIn = prefix + secret + suffix
     base58_wif = EncodeBase58Check(vchIn)
@@ -451,18 +451,14 @@ def deserialize_privkey(key: str) -> (str, bytes, bool):
 
     if txin_type is None:
         # keys exported in version 3.0.x encoded script type in first byte
-<<<<<<< HEAD
-        txin_type = inv_dict(SCRIPT_TYPES)[vch[0] - constants.net.WIF_PREFIX]
-=======
         prefix_value = vch[0] - constants.net.WIF_PREFIX
         try:
             txin_type = WIF_SCRIPT_TYPES_INV[prefix_value]
         except KeyError:
             raise BitcoinException('invalid prefix ({}) for WIF key (1)'.format(vch[0]))
->>>>>>> c4ef5bfedb26074758b4202082fa00b740cd970d
     else:
         # all other keys must have a fixed first byte
-        if vch[0] != (SCRIPT_TYPES['p2pkh'] + constants.net.WIF_PREFIX) & 255:
+        if vch[0] != (WIF_SCRIPT_TYPES['p2pkh'] + constants.net.WIF_PREFIX) & 255:
             raise BitcoinException('invalid prefix ({}) for WIF key'.format(vch[0]))
 
     if len(vch) not in [33, 34]:
