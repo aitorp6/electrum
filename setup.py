@@ -78,20 +78,9 @@ setup(
         'electrum_deeponion_plugins': 'plugins',
     },
     package_data={
-<<<<<<< HEAD
-        'electrum_deeponion': [
-            'servers.json',
-            'servers_testnet.json',
-            'servers_regtest.json',
-            'currencies.json',
-            'checkpoints.json',
-            'checkpoints_testnet.json',
-            'www/index.html',
-            'wordlist/*.txt',
-=======
         '': ['*.txt', '*.json', '*.ttf', '*.otf'],
-        'electrum': [
->>>>>>> 5a75ce74d775ec5ea789c546f879c7212027ba06
+        'electrum_deeponion': [
+            'wordlist/*.txt',
             'locale/*/LC_MESSAGES/electrum.mo',
         ],
     },
