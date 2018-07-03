@@ -43,7 +43,7 @@ class BitcoinMainnet:
     WIF_PREFIX = 0x80
     ADDRTYPE_P2PKH = 31
     ADDRTYPE_P2SH = 78
-    SEGWIT_HRP = "onion"
+    SEGWIT_HRP = "on"
     GENESIS = "000004e29458ef4f2e0abab544737b07344e6ff13718f7c2d12926166db07b5e"
     DEFAULT_PORTS = {'t': '50001', 's': '50002'}
     DEFAULT_SERVERS = read_json('servers.json', {})
