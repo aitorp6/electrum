@@ -283,7 +283,10 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
 
     def on_error(self, exc_info):
         if not isinstance(exc_info[1], UserCancelled):
-            traceback.print_exception(*exc_info)
+            try:
+                traceback.print_exception(*exc_info)
+            except OSError:
+                pass  # see #4418; try to at least show popup:
             self.show_error(str(exc_info[1]))
 
     def on_network(self, event, *args):
@@ -1125,7 +1128,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
         def on_fee_or_feerate(edit_changed, editing_finished):
             edit_other = self.feerate_e if edit_changed == self.fee_e else self.fee_e
             if editing_finished:
-                if not edit_changed.get_amount():
+                if edit_changed.get_amount() is None:
                     # This is so that when the user blanks the fee and moves on,
                     # we go back to auto-calculate mode and put a fee back.
                     edit_changed.setModified(False)
@@ -1345,7 +1348,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
             # actual fees often differ somewhat.
             if freeze_feerate or self.fee_slider.is_active():
                 displayed_feerate = self.feerate_e.get_amount()
-                if displayed_feerate:
+                if displayed_feerate is not None:
                     displayed_feerate = quantize_feerate(displayed_feerate)
                 else:
                     # fallback to actual fee
