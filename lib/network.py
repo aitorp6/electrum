@@ -529,9 +529,10 @@ class Network(util.DaemonThread):
         self.auto_connect = auto_connect
         if self.proxy != proxy or self.protocol != protocol:
             # Restart the network defaulting to the given server
-            self.stop_network()
-            self.default_server = server
-            self.start_network(protocol, proxy)
+            with self.interface_lock:
+                self.stop_network()
+                self.default_server = server
+                self.start_network(protocol, proxy)
         elif self.default_server != server:
             self.switch_to_interface(server)
         else:
@@ -1065,7 +1066,12 @@ class Network(util.DaemonThread):
         self.on_stop()
 
     def on_notify_header(self, interface, header_dict):
-        header_hex, height = header_dict['hex'], header_dict['height']
+        try:
+            header_hex, height = header_dict['hex'], header_dict['height']
+        except KeyError:
+            # no point in keeping this connection without headers sub
+            self.connection_down(interface.server)
+            return
         header = blockchain.deserialize_header(util.bfh(header_hex), height)
         if height < self.max_checkpoint():
             self.connection_down(interface.server)
