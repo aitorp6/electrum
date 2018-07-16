@@ -619,6 +619,7 @@ class Transaction:
         self._outputs = None
         self.locktime = 0
         self.version = 1
+        self.time = 1
         # by default we assume this is a partial txn;
         # this value will get properly set when deserializing
         self.is_partial_originally = True
@@ -709,6 +710,7 @@ class Transaction:
         self._outputs = [(x['type'], x['address'], x['value']) for x in d['outputs']]
         self.locktime = d['lockTime']
         self.version = d['version']
+        self.time = d['time']
         self.is_partial_originally = d['partial']
         self._segwit_ser = d['segwit_ser']
         return d
@@ -975,6 +977,7 @@ class Transaction:
     def serialize_to_network(self, estimate_size=False, witness=True):
         nVersion = int_to_hex(self.version, 4)
         nLocktime = int_to_hex(self.locktime, 4)
+        nTime = int_to_hex(self.time, 4)        
         inputs = self.inputs()
         outputs = self.outputs()
         txins = var_int(len(inputs)) + ''.join(self.serialize_input(txin, self.input_script(txin, estimate_size)) for txin in inputs)
@@ -985,7 +988,7 @@ class Transaction:
             witness = ''.join(self.serialize_witness(x, estimate_size) for x in inputs)
             return nVersion + marker + flag + txins + txouts + witness + nLocktime
         else:
-            return nVersion + txins + txouts + nLocktime
+            return nVersion + nTime + txins + txouts + nLocktime
 
     def txid(self):
         self.deserialize()
