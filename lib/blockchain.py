@@ -27,6 +27,8 @@ from . import util
 from . import bitcoin
 from . import constants
 from .bitcoin import *
+from .crypto import Hash_x13
+
 
 MAX_TARGET = 0x00000000FFFF0000000000000000000000000000000000000000000000000000
 
@@ -65,7 +67,7 @@ def hash_header(header):
         return '0' * 64
     if header.get('prev_block_hash') is None:
         header['prev_block_hash'] = '00'*32
-    return hash_encode(Hash(bfh(serialize_header(header))))
+    return hash_encode(Hash_x13(bfh(serialize_header(header))))
 
 
 blockchains = {}

@@ -130,6 +130,11 @@ def Hash(x: bytes) -> bytes:
     out = bytes(sha256(sha256(x)))
     return out
 
+def Hash_x13(x: bytes) -> bytes:
+    import x13_hash
+    x = to_bytes(x, 'utf8')
+    out = bytes(x13_hash.getPoWHash(x))
+    return out
 
 def hash_160(x: bytes) -> bytes:
     try:
